@@ -1,0 +1,156 @@
+---
+title: 'Dynamic Cache Tuning: Optimasi RAM untuk Streaming Stabil'
+description: 'Panduan teknis tentang bagaimana mengelola buffer dan memori untuk streaming live yang lebih stabil dan responsif.'
+pubDate: 'Feb 15 2026'
+heroImage: '../../assets/02-Setelah-Pause.png'
+---
+import { Image } from 'astro:assets';
+import pauseImage from '../../assets/02-Setelah-Pause.png';
+
+**Dynamic Cache Tuning** membantu mengelola buffer dan memori secara lebih tepat untuk mengurangi risiko video *freezing* dan menjaga streaming tetap responsif, terutama pada stream live seperti HLS/m3u8.
+
+---
+
+## 1. Masalah: Cache Besar Bisa Menambah Latency & Menghambat Re-Sync
+
+Aplikasi ini secara default memiliki Forward Cache sebesar **150MB**. Secara teori, buffer besar terdengar ideal karena dapat menahan lebih banyak data saat jaringan tidak stabil.
+
+Namun pada stream live (misalnya HLS), cache yang terlalu besar dapat menimbulkan efek samping:
+
+- Player menyimpan terlalu banyak segmen di depan (*buffering terlalu jauh*).
+- Saat playlist server bergeser (*sliding window*), player menjadi lebih lambat mengejar segmen terbaru.
+- Setelah *pause* panjang atau perubahan kondisi jaringan, proses sinkronisasi ulang (*re-sync*) bisa lebih berat.
+
+Dalam beberapa kasus, kondisi ini dapat memicu freeze atau playback yang terasa “tertahan”.
+
+---
+
+## 2. Penjelasan Lebih Dalam: Apa itu Re-Sync dan Kenapa Bisa Freeze?
+
+Pada streaming live seperti **HLS (m3u8)**, video bukan satu file statis. Server terus menerbitkan segmen baru:
+
+- `segment_100.ts`
+- `segment_101.ts`
+- `segment_102.ts`
+
+Sementara playlist `.m3u8` diperbarui setiap beberapa detik.
+
+### Sliding Window: Segmen Lama Menghilang
+
+HLS live biasanya hanya menyimpan segmen terbaru dalam playlist (misalnya 6–12 segmen terakhir). Segmen lama akan dibuang.
+
+Artinya, jika player tertinggal terlalu jauh:
+
+- segmen yang ingin diputar berikutnya bisa sudah tidak tersedia
+- request segmen lama bisa menghasilkan 404 atau stall
+
+### Buffer Besar = Player Terlalu Jauh dari Live Edge
+
+Jika cache terlalu besar, MPV dapat menyimpan data jauh di depan playback. Ini membuat player seperti “menonton rekaman”, bukan live.
+
+### Pause Lama: Skenario Paling Berbahaya
+
+Saat user melakukan pause panjang:
+
+1. Player sudah menyimpan banyak segmen di RAM
+2. Server terus berjalan dan playlist bergeser jauh
+3. Segmen lanjutan yang diharapkan player bisa sudah hilang
+
+Ketika playback dilanjutkan, MPV mencoba melanjutkan timeline lama yang sudah tidak kompatibel.
+
+### Kenapa Terlihat Sebagai Freeze?
+
+MPV dapat masuk kondisi menunggu:
+
+- segmen yang tidak lagi tersedia
+- timestamp yang tidak kontinu
+- buffer refill yang tidak pernah terpenuhi
+
+Secara visual, user melihat video diam (*freeze*), padahal root cause-nya adalah player gagal mengejar posisi live terbaru.
+
+---
+
+## 3. Solusi: “Less is More” untuk Freshness dan Responsiveness
+
+Pendekatan yang digunakan adalah membatasi cache ke ukuran yang lebih moderat, misalnya **25MB – 50MB**.
+
+Dengan cache yang lebih kecil:
+
+- Player lebih cepat mengambil segmen terbaru dari server.
+- Latency terhadap live edge berkurang.
+- Recovery setelah gangguan atau pause lebih responsif.
+
+Namun perlu dicatat trade-off penting:
+
+> Cache kecil meningkatkan freshness, tetapi menurunkan toleransi terhadap jitter jaringan.
+
+Jika koneksi sering drop, buffer terlalu kecil bisa memicu rebuffering lebih sering.
+
+---
+
+## 4. Implementasi Teknis (The "set" Command)
+
+Beberapa binding Python untuk MPV tidak menyediakan API `set_option()` secara lengkap, dan opsi demuxer seperti:
+
+- `demuxer-max-bytes`
+- `demuxer-max-back-bytes`
+
+bukan runtime property biasa, melainkan option level demuxer.
+
+Untuk kompatibilitas maksimal, aplikasi menggunakan jalur perintah paling dasar:
+
+```python
+def apply_cache_settings(self, max_bytes_mb=None, max_back_bytes_mb=None):
+    # Menggunakan command("set", ...) agar MPV menangani parsing internal
+    if max_bytes_mb is not None:
+        max_bytes = str(int(max_bytes_mb * 1024 * 1024))
+        self.mpv.command("set", "demuxer-max-bytes", max_bytes)
+
+    if max_back_bytes_mb is not None:
+        max_back_bytes = str(int(max_back_bytes_mb * 1024 * 1024))
+        self.mpv.command("set", "demuxer-max-back-bytes", max_back_bytes)
+```
+
+Pendekatan ini menghindari error umum seperti:
+
+- `Invalid value for mpv parameter (-4)`
+- missing option wrapper pada binding tertentu
+
+---
+
+## 5. Mekanisme Pre-Load & Feedback
+
+Opsi demuxer sering ditolak jika diubah saat playback sudah berjalan.
+Karena itu aplikasi memastikan konfigurasi cache dikirim **sebelum sesi playback dimulai**:
+
+```python
+# Di dalam app_gui.py
+def _load_thread(self, url, ref, ua, max_b, back_b):
+    if self.player:
+        # Terapkan Cache Settings tepat sebelum play()
+        self.player.apply_cache_settings(max_b, back_b)
+        self.player.play(url, headers=headers, user_agent=ua)
+```
+
+Aplikasi juga memberikan feedback real-time:
+
+- **✔ "Applied"**: opsi diterima sebelum playback dimulai.
+- **i "Active on reload"**: perubahan efektif penuh setelah stream di-refresh.
+
+---
+
+## 6. Cara Penggunaan Terbaik
+
+1. Buka **Debug Overlay** (`Ctrl+D`) untuk memantau buffer/cache.
+2. Jika playback sering freeze atau tertinggal dari live edge, coba turunkan Forward Cache:
+   - dari 150MB → 50MB
+   - atau bahkan 25MB untuk stream live agresif
+3. Klik **Apply** atau tekan **Enter**
+4. Player akan lebih cepat mengejar segmen terbaru dan lebih responsif terhadap perubahan playlist.
+
+<div style="display: flex; flex-direction: column; align-items: center; gap: 1rem; margin: 4rem 0;">
+    <Image src={pauseImage} width={600} height={600} alt="Tampilan saat pause" class="glass" />
+    <p style="margin: 0; font-style: italic;">Kontrol buffer saat kondisi setelah pause >1 menit.</p>
+</div>
+
+---

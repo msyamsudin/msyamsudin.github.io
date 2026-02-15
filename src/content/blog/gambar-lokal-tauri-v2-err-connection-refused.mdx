@@ -1,0 +1,75 @@
+---
+title: 'Gambar Lokal Tauri v2: ERR_CONNECTION_REFUSED & 403'
+description: 'Solusi teknis untuk mengatasi error ERR_CONNECTION_REFUSED dan 403 Forbidden saat mengakses asset lokal di Tauri v2.'
+pubDate: 'Jan 05 2026'
+heroImage: '../../assets/blog-placeholder-2.jpg'
+---
+
+Saat ingin mengimplementasikan fitur untuk menampilkan cover buku yang disimpan secara lokal di aplikasi Tauri v2, saya menghadapi dua error yang membuat gambar tidak muncul meskipun file sudah tersimpan dengan benar di disk.
+
+## Error 1: `ERR_CONNECTION_REFUSED` pada `asset.localhost`
+
+```text
+GET http://asset.localhost/C%3A%2FUsers%2F...%2Fcover.jpg net::ERR_CONNECTION_REFUSED
+```
+
+Frontend gagal memuat gambar lokal yang sudah dikonversi menggunakan `convertFileSrc()` dari Tauri API.
+
+Tauri v2 menggunakan protokol khusus (`asset://`) untuk mengakses file lokal secara aman. Protokol ini ditangani oleh server internal yang hanya aktif jika fitur `protocol-asset` diaktifkan di dependency `tauri`.
+
+Tanpa fitur ini, request ke `asset.localhost` tidak ada yang menangani, sehingga browser menolak koneksi.
+
+### Solusi
+
+Aktifkan fitur `protocol-asset` di `src-tauri/Cargo.toml`:
+
+```toml
+[dependencies]
+tauri = { version = "2", features = ["protocol-asset"] }
+```
+
+> [!IMPORTANT]
+> Setelah menambahkan fitur ini, aplikasi harus di-rebuild agar perubahan diterapkan.
+
+## Error 2: `403 Forbidden` pada Asset Protocol
+
+Setelah `ERR_CONNECTION_REFUSED` teratasi, muncul error baru:
+
+```text
+GET http://asset.localhost/C%3A%2FUsers%2F...%2Fcover.jpg 403 (Forbidden)
+```
+
+Meskipun protokol sudah aktif, Tauri v2 menerapkan keamanan berlapis. Secara default, **tidak ada file sistem yang dapat diakses** melalui asset protocol tanpa konfigurasi eksplisit.
+
+Ini adalah fitur keamanan untuk mencegah aplikasi web membaca file sensitif dari sistem pengguna.
+
+### Solusi
+
+Konfigurasi `assetProtocol` di `src-tauri/tauri.conf.json` untuk mendefinisikan scope yang diizinkan:
+
+```json
+{
+  "security": {
+    "csp": null,
+    "assetProtocol": {
+      "enable": true,
+      "scope": ["$APPDATA/library/covers/**"]
+    }
+  }
+}
+```
+
+**Penjelasan:**
+
+1. `enable: true` – Mengaktifkan asset protocol (wajib meskipun sudah ada di `Cargo.toml`).
+2. `scope: ["$APPDATA/**"]` – Mengizinkan akses ke semua file di direktori data aplikasi.
+3. `$APPDATA` adalah variabel yang otomatis di-resolve ke path aplikasi (contoh: `C:\Users...\AppData\Roaming\com.syams.ringkasanku`).
+4. `/**` berarti akses rekursif ke semua subdirektori.
+
+### Catatan Tambahan
+
+Scope `$APPDATA/**` memberikan akses penuh ke folder data aplikasi. Jika aplikasi kamu menyimpan data sensitif, pertimbangkan untuk:
+
+1. Membatasi scope ke subdirektori spesifik: `["$APPDATA/library/covers/**"]`
+2. Validasi path di backend sebelum menyimpan.
+3. Tidak menyimpan kredensial atau data pribadi di direktori yang sama.

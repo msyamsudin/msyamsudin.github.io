@@ -1,0 +1,194 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import FormattedDate from '../components/FormattedDate.astro';
+
+const posts = (await getCollection('blog'))
+	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+	.slice(0, 3);
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section class="latest-posts">
+				<div class="section-header">
+					<h2 class="primary-text">Latest Articles</h2>
+					<a href="/blog" class="view-all">View All Posts &rarr;</a>
+				</div>
+				<div class="posts-grid">
+					{
+						posts.map((post) => (
+							<a href={`/blog/${post.id}/`} class="post-card-simple glass">
+								<div class="post-content">
+									<span class="post-date"><FormattedDate date={post.data.pubDate} /></span>
+									<h3 class="post-title">{post.data.title}</h3>
+									<p class="post-description">{post.data.description.substring(0, 100)}...</p>
+								</div>
+							</a>
+						))
+					}
+				</div>
+			</section>
+		</main>
+
+		<Footer />
+	</body>
+</html>
+
+<style>
+	.hero {
+		text-align: center;
+		padding: 4rem 0 6rem 0;
+		max-width: 800px;
+		margin: 0 auto;
+	}
+	.hero h1 {
+		font-size: 4.5rem;
+		margin-bottom: 1.5rem;
+		line-height: 1.1;
+	}
+	.hero-subtitle {
+		font-size: 1.5rem;
+		margin-bottom: 3rem;
+	}
+	.hero-actions {
+		display: flex;
+		gap: 1.25rem;
+		justify-content: center;
+	}
+	.btn {
+		padding: 0.8rem 2rem;
+		border-radius: 12px;
+		font-weight: 600;
+		transition: transform 0.2s ease, box-shadow 0.2s ease;
+		text-decoration: none;
+	}
+	.btn:hover {
+		transform: translateY(-2px);
+	}
+	.btn-primary {
+		background: var(--accent);
+		color: white !important;
+		box-shadow: 0 4px 15px rgba(224, 17, 95, 0.4);
+	}
+	.btn-secondary {
+		background: var(--glass-bg);
+		border: 1px solid var(--glass-border);
+		color: var(--text-primary) !important;
+		backdrop-filter: blur(12px);
+	}
+
+	.latest-posts {
+		margin-top: 6rem;
+		padding-bottom: 4rem;
+	}
+	.section-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-end;
+		margin-bottom: 2rem;
+	}
+	.section-header h2 {
+		font-size: 2.5rem;
+		margin: 0;
+	}
+	.view-all {
+		color: var(--text-secondary);
+		text-decoration: none;
+		font-weight: 500;
+		transition: color 0.2s ease;
+	}
+	.view-all:hover {
+		color: var(--accent-emerald);
+	}
+
+	.posts-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 2rem;
+	}
+	.post-card-simple {
+		text-decoration: none;
+		padding: 2rem;
+		transition: transform 0.3s ease, border-color 0.3s ease;
+	}
+	.post-card-simple:hover {
+		transform: translateY(-8px);
+		border-color: var(--accent);
+	}
+	.post-date {
+		font-size: 0.9rem;
+		color: var(--text-secondary);
+		display: block;
+		margin-bottom: 0.75rem;
+	}
+	.post-title {
+		font-size: 1.25rem;
+		margin: 0 0 1rem 0;
+		color: var(--text-primary);
+		line-height: 1.4;
+	}
+	.post-description {
+		font-size: 1rem;
+		color: var(--text-secondary);
+		margin: 0;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.specialties {
+		padding: 6rem 0;
+		border-top: 1px solid var(--glass-border);
+		margin-top: 4rem;
+	}
+	.specialties h2 {
+		font-size: 3rem;
+		margin-bottom: 3rem;
+	}
+	.text-center { text-align: center; }
+
+	.features {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 2rem;
+	}
+	.feature-card {
+		padding: 2.5rem;
+		transition: transform 0.3s ease;
+	}
+	.feature-card:hover {
+		transform: translateY(-10px);
+	}
+	.feature-card h3 {
+		font-size: 1.5rem;
+		margin-bottom: 1rem;
+	}
+
+	@media (max-width: 900px) {
+		.features, .posts-grid {
+			grid-template-columns: 1fr;
+		}
+		.hero h1 {
+			font-size: 3rem;
+		}
+		.section-header {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 1rem;
+		}
+	}
+
+	.text-white { color: #fff; }
+	.font-bold { font-weight: 700; }
+</style>

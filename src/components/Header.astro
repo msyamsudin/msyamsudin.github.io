@@ -1,0 +1,75 @@
+---
+import { SITE_TITLE } from '../consts';
+import HeaderLink from './HeaderLink.astro';
+---
+
+<header class="glass">
+	<nav>
+		<h2 class="logo"><a href="/" class="primary-text">{SITE_TITLE}</a></h2>
+		<div class="internal-links">
+			<HeaderLink href="/">Home</HeaderLink>
+			<HeaderLink href="/blog">Blog</HeaderLink>
+			<HeaderLink href="/about">About</HeaderLink>
+		</div>
+	</nav>
+</header>
+<style>
+	header {
+		margin: 1.5em auto;
+		padding: 0 2em;
+		width: 900px;
+		max-width: calc(100% - 2em);
+	}
+	h2.logo {
+		margin: 0;
+		font-size: 1.5rem;
+		font-weight: 700;
+	}
+	h2 a {
+		text-decoration: none;
+	}
+	nav {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		height: 4rem;
+	}
+	.internal-links {
+		display: flex;
+		gap: 1.5rem;
+	}
+	.internal-links a {
+		padding: 0.5rem 0;
+		color: var(--text-secondary);
+		font-weight: 500;
+		position: relative;
+	}
+	.internal-links a:hover,
+	.internal-links a.active {
+		color: var(--text-primary);
+	}
+	.internal-links a::after {
+		content: '';
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		width: 0;
+		height: 2px;
+		background: var(--accent);
+		transition: width 0.3s ease;
+	}
+	.internal-links a:hover::after,
+	.internal-links a.active::after {
+		width: 100%;
+	}
+
+	@media (max-width: 720px) {
+		header {
+			width: 100%;
+			margin: 1em auto;
+		}
+		.internal-links {
+			gap: 1rem;
+		}
+	}
+</style>
