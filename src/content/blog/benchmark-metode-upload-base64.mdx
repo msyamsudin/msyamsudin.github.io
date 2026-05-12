@@ -1,0 +1,148 @@
+---
+title: 'Benchmark Metode Upload base64'
+description: 'Analisis perbandingan performa antara Base64 dan URL eksternal dalam pemrosesan dokumen PDF.'
+pubDate: 'May 13 2026'
+heroImage: '../../assets/blog-placeholder-2.jpg'
+---
+
+Tulisan ini mendokumentasikan hasil uji performa pemrosesan PDF menggunakan `gemini-3.1-flash-lite-preview`. Pengujian membandingkan empat cara pengiriman gambar dalam dua mode eksekusi — Paralel dan Berurutan — pada dokumen 23 halaman beresolusi 1224×1584 piksel. Dokumen PDF yang diuji dapat ditemukan di: https://arxiv.org/html/2504.19413v1
+
+---
+
+## TL;DR
+
+- Mode **Paralel** sekitar 8× lebih cepat dari Berurutan untuk dokumen 23 halaman, tapi waktu tunggu respons pertamanya lebih tidak stabil karena banyak permintaan datang sekaligus dan saling berebut giliran di sisi server
+- **Base64 lebih cepat** dari Files API maupun URL eksternal dari sisi total waktu, karena tidak ada waktu yang terbuang untuk mengambil file dari tempat lain
+- **Jumlah token Base64 tidak lebih besar** dibanding metode berbasis URL — token dihitung dari data piksel hasil decode, bukan dari ukuran kiriman datanya
+- Teori awal yang saya yakini sebelumnya bahwa Base64 lebih boros token dan lebih lambat tidak terbukti dalam pengujian ini
+
+---
+
+## Teori Awal
+
+Sebelum pengujian, saya memiliki teori pribadi yang mempercayai bahwa Base64 akan mengonsumsi lebih banyak prompt token dibanding metode berbasis URL, karena ukuran payload-nya yang lebih besar. Teori ini juga menjadi dasar dugaan bahwa Base64 akan lebih lambat secara keseluruhan, karena payload lebih besar berarti lebih banyak data yang diproses model, yang sekilas terasa masuk akal. Maka dari itu, saya memutuskan untuk melakukan benchmark ini untuk membuktikan teori saya.
+
+---
+
+## Setup Pengujian
+
+**Model:** `gemini-3.1-flash-lite-preview`  
+**Dokumen:** 23 halaman, resolusi 1224×1584 piksel per halaman  
+**Penyedia layanan:** Gemini API dan OpenRouter
+
+**Empat skenario yang diuji:**
+
+- **Gemini API — Base64:** Gambar diubah ke format Base64 dan dikirim langsung dalam satu paket data
+- **Gemini API — Files API:** Gambar diunggah ke Files API terlebih dahulu, permintaan berikutnya cukup menyertakan alamat referensinya
+- **OpenRouter — Base64:** Sama seperti Base64, tapi dikirim melalui layanan OpenRouter
+- **OpenRouter — Supabase:** Gambar disimpan di Supabase Storage, model mengambilnya sendiri lewat tautan URL
+
+---
+
+## Hasil
+
+### Mode Berurutan
+
+| Skenario | Durasi Total (ms) | Avg TTFT (ms) | Token/detik | Efisiensi Pengiriman | Estimasi Biaya |
+|---|---|---|---|---|---|
+| Gemini API — Base64 | 108.575 | 2.371 | 355 | −33,3% | — |
+| Gemini API — Files API | 184.919 | 2.760 | 418 | 100% | — |
+| OpenRouter — Base64 | 129.060 | 3.060 | 324 | −33,3% | $0,0329 |
+| OpenRouter — Supabase | 164.600 | 3.607 | 339 | 99,9% | $0,0340 |
+
+### Mode Paralel
+
+| Skenario | Durasi Total (ms) | Avg TTFT (ms) | Token/detik | Efisiensi Pengiriman | Estimasi Biaya |
+|---|---|---|---|---|---|
+| Gemini API — Base64 | 13.464 | 3.689 | 405 | −33,3% | — |
+| Gemini API — Files API | 19.203 | 2.720 | 408 | 100% | — |
+| OpenRouter — Base64 | 14.307 | 3.780 | 337 | −33,3% | $0,0329 |
+| OpenRouter — Supabase | 14.445 | 2.866 | 368 | 99,9% | $0,0337 |
+
+> **TTFT** = Time To First Token = berapa lama hingga token pertama muncul  
+> **Token/detik** = kecepatan model menghasilkan teks  
+> **Efisiensi Pengiriman** = seberapa efisien data gambar dikirim saat permintaan ke model, tidak termasuk proses unggah awal
+
+Semua skenario berhasil memproses 23/23 halaman tanpa error.
+
+---
+
+## Analisis
+
+### Berurutan vs Paralel
+
+Mode Paralel secara konsisten lebih cepat di semua skenario. Selisih terbesar terlihat di Gemini API Base64: 13.464 ms (Paralel) vs 108.575 ms (Berurutan) — sekitar 8× lebih cepat.
+
+Perbedaan ini wajar, mode Berurutan menunggu setiap halaman selesai diproses sebelum memulai halaman berikutnya, sementara mode Paralel mengirim semua permintaan sekaligus.
+
+Yang perlu diperhatikan, mode Paralel menunjukkan waktu tunggu respons pertama yang lebih tidak menentu.
+
+| | Max TTFT | StdDev TTFT |
+|---|---|---|
+| Paralel — Gemini API Base64 | 8.670 ms | 1.290 ms |
+| Berurutan — Gemini API Base64 | 2.921 ms | 332 ms |
+
+Ini kemungkinan terjadi karena banyak permintaan datang bersamaan, sehingga sebagian harus mengantri dan menunggu giliran di sisi server. Mode Berurutan lebih stabil per permintaan karena tidak ada yang saling berebut giliran.
+
+### Base64 vs URL Eksternal
+
+Dari sisi total waktu, Base64 lebih cepat dibanding Files API maupun Supabase di kedua mode, meski ukuran datanya 33% lebih besar karena proses encoding.
+
+Penyebabnya: metode berbasis URL membutuhkan langkah tambahan, server model harus **pergi mengambil gambar dari server lain** sebelum bisa memprosesnya. Base64 tidak memerlukan langkah ini karena data gambar sudah ikut di dalam satu paket kiriman.
+
+Files API juga punya waktu yang terbuang di awal untuk proses unggah, yang langsung menambah total durasi — meski saat proses pengolahan data berlangsung, metode ini efisien karena permintaan berikutnya cukup mengirim tautan referensi saja.
+
+| Skenario | Jumlah Token (Mode Berurutan) |
+|---|---|
+| Gemini API — Base64 | 30.178 |
+| Gemini API — Files API | 31.280 |
+| OpenRouter — Base64 | 29.924 |
+| OpenRouter — Supabase | 31.279 |
+
+Jumlah token dihitung setelah gambar dibaca dan diubah menjadi representasi visual oleh model. Karena gambar akhirnya menghasilkan data visual yang sama, model tidak membedakan apakah gambar berasal dari Base64 atau URL eksternal.
+
+Artinya, ukuran payload yang lebih besar pada Base64 hanya mempengaruhi proses pengiriman data melalui jaringan, bukan jumlah token yang digunakan saat inferensi.
+
+Dengan demikian, teori awal saya bahwa Base64:
+
+1. Lebih boros token
+2. Lebih lambat secara waktu
+
+ternyata tidak terbukti dalam pengujian ini.
+
+---
+
+## Perbandingan Singkat
+
+| | Base64 | URL Eksternal |
+|---|---|---|
+| Ukuran kiriman data | +33% (akibat encoding) | Lebih kecil |
+| Perlu ambil file dari tempat lain | Tidak | Ya |
+| Perlu unggah file di awal | Tidak | Ya (Files API / Supabase) |
+| Total waktu | Lebih cepat | Lebih lambat |
+| Stabilitas waktu respons pertama | Lebih bervariasi di mode Paralel | Setara |
+| Jumlah token | Setara | Setara |
+| Cocok untuk | Pemrosesan cepat, file tidak dipakai ulang | File dipakai berulang, koneksi terbatas |
+
+---
+
+**Paralel + Base64 adalah kombinasi tercepat dan paling efisien.** Pengujian ini membuktikan bahwa kecepatan pemrosesan gambar sangat ditentukan oleh ada tidaknya **langkah ekstra untuk mengambil file dari tempat lain**, bukan oleh seberapa besar data yang dikirim. Base64 terbukti lebih cepat tanpa menambah konsumsi token, mematahkan teori awal saya bahwa metode ini lebih lambat atau lebih banyak mengkonsumsi token dibanding URL eksternal.
+
+---
+
+## Catatan
+
+Pengujian ini belum mencakup perbandingan kualitas hasil antara mode Paralel dan Berurutan, serta belum diuji pada dokumen dengan jumlah halaman yang lebih banyak. Hasil juga bisa berbeda tergantung kondisi jaringan dan beban server saat pengujian dilakukan.
+
+---
+
+*Pengujian dilakukan menggunakan `gemini-3.1-flash-lite-preview` via Gemini API dan OpenRouter.*
+
+---
+
+## Source Code
+
+Seluruh implementasi teknis dan tools benchmark yang digunakan dalam artikel ini dapat dilihat pada repository GitHub:
+
+👉 **[msyamsudin/PustakaKu-MD](https://github.com/msyamsudin/PustakaKu-MD)**
+
