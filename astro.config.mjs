@@ -10,21 +10,26 @@ import { visit } from 'unist-util-visit';
 
 // Plugin untuk membersihkan backslash escape pada kurung kurawal di blok math
 // Dan mendukung penulisan rumus via ```math blocks
-function remarkMathFix() {
+// Plugin untuk mengubah [ ] kembali ke { } di level rehype (HTML)
+function rehypeMathFix() {
 	return (/** @type {any} */ tree) => {
-		visit(tree, (node) => {
-			// 1. Dukungan ```math code blocks
-			if (node.type === 'code' && node.lang === 'math') {
-				node.type = 'math';
-				return;
-			}
-
-			// 2. Pembersihan escape pada $$ math $$ atau $ math $
-			if (node.type === 'math' || node.type === 'inlineMath') {
-				node.value = node.value
-					.replace(/\\\{/g, '{')
-					.replace(/\\\}/g, '}')
-					.replace(/\\\_/g, '_');
+		visit(tree, 'element', (node) => {
+			if (
+				node.tagName === 'div' || node.tagName === 'span' || 
+				(node.properties?.className && Array.isArray(node.properties.className) && 
+				 node.properties.className.includes('math'))
+			) {
+				// Cari text node di dalam elemen math
+				if (node.children) {
+					for (const child of node.children) {
+						if (child.type === 'text' && child.value) {
+							child.value = child.value
+								.split('[').join('{')
+								.split(']').join('}')
+								.split('\\_').join('_');
+						}
+					}
+				}
 			}
 		});
 	};
@@ -35,8 +40,8 @@ export default defineConfig({
 	site: 'https://msyamsudin.github.io',
 	integrations: [
 		mdx({
-			remarkPlugins: [remarkMath, remarkMathFix],
-			rehypePlugins: [rehypeKatex],
+			remarkPlugins: [remarkMath],
+			rehypePlugins: [rehypeMathFix, rehypeKatex],
 		}),
 		sitemap(),
 	],
