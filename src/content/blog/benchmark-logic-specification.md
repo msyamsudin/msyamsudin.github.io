@@ -138,7 +138,7 @@ Sebelum skenario berjalan, kredensial dan konfigurasi model divalidasi. Skenario
 | `google` | `googleApiKey` | Model dicek via `googleModel \|\| selectedModel` |
 | `anthropic` | `anthropicApiKey` | Model dicek via `anthropicModel \|\| selectedModel` |
 | `openrouter` | `openRouterKey` + model | Validasi juga config Supabase jika `imageInputMode === "supabase"` |
-| `ollama` | `ollamaModel \|\| selectedModel` | Tidak butuh API key (lokal). Mendukung mode `base64` dan `supabase`. |
+| `ollama` | `ollamaModel \|\| selectedModel` | Tidak butuh API key (lokal). Hanya mendukung mode `base64` secara lokal. |
 
 ### Source Code
 
@@ -213,7 +213,7 @@ Setiap skenario menentukan bagaimana gambar dikirim ke AI provider:
 | `google_files` | Google Files API | `""` (kosong) | URI file Google | Ukuran string URI |
 
 > [!NOTE]
-> Mode `supabase` kini didukung penuh untuk provider `ollama` maupun `openrouter`. Validasi Supabase hanya dijalankan jika `imageInputMode === "supabase"`.
+> Mode `supabase` didukung penuh untuk provider `openrouter` (sebagai transportasi gambar eksternal via URL). Validasi Supabase hanya dijalankan jika `imageInputMode === "supabase"`.
 
 ---
 
@@ -412,7 +412,7 @@ const estimatedCostUsd = costPages.length > 0
 - **Metrik CPS**: Menambahkan kalkulasi *Characters Per Second* yang berjalan paralel dengan TPS. Metrik ini tokenizer-agnostic dan lebih adil untuk perbandingan lintas provider.
 - **Field `totalOutputChars`**: Ditambahkan ke `BenchmarkResult` sebagai jumlah total karakter markdown output dari semua halaman sukses.
 - **Deteksi Layout Multi-Kolom**: Menambahkan `analyzePageLayout` → `slicePageImage` → `extractMarkdownWithSlicing` sebagai alur pra-pemrosesan sebelum fase encoding/upload.
-- **Ollama + Supabase**: Provider Ollama kini mendukung mode `supabase` sebagai transportasi gambar, setara dengan OpenRouter.
+- **Klarifikasi Ollama + Supabase**: Dipastikan bahwa Ollama tidak mendukung mode `supabase` secara native karena batasan API local runner Ollama (`/api/generate`) yang hanya menerima data base64 secara lokal.
 - **Dokumentasi Tipe Lengkap**: `BenchmarkResult` kini terdokumentasi penuh di Seksi 1 termasuk semua field baru.
 
 ### v5 (2026-05-14)
