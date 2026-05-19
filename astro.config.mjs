@@ -38,11 +38,12 @@ function rehypeMathFix() {
 // https://astro.build/config
 export default defineConfig({
 	site: 'https://msyamsudin.github.io',
+	markdown: {
+		remarkPlugins: [remarkMath],
+		rehypePlugins: [rehypeMathFix, rehypeKatex],
+	},
 	integrations: [
-		mdx({
-			remarkPlugins: [remarkMath],
-			rehypePlugins: [rehypeMathFix, rehypeKatex],
-		}),
+		mdx(),
 		sitemap(),
 	],
 });

@@ -1,15 +1,15 @@
 ---
 title: 'Spesifikasi Teknis: Sistem Benchmark PustakaKu-MD'
-description: 'Referensi audit untuk model AI dan developer dalam meninjau akurasi metrik benchmark pada sistem PustakaKu-MD.'
+description: 'Referensi audit untuk model AI dan developer dalam meninjau akurasi metrik benchmark.'
 pubDate: 'May 14 2026'
 heroImage: '../../assets/blog-placeholder-3.jpg'
 ---
 
-
 > **Sumber**: [`src/hooks/useBenchmark.ts`](https://github.com/msyamsudin/PustakaKu-MD/blob/main/src/hooks/useBenchmark.ts) + [`src/lib/utils/types.ts`](https://github.com/msyamsudin/PustakaKu-MD/blob/main/src/lib/utils/types.ts)
-> **Versi**: v5 (2026-05-14)
+> **Versi**: 5 (2026-05-14)
 
 > **Tujuan**: Referensi audit untuk model AI dan developer dalam meninjau akurasi metrik benchmark.
+
 ---
 
 ## 1. Ikhtisar Sistem
@@ -77,10 +77,10 @@ Sebelum skenario berjalan, kredensial dan konfigurasi model divalidasi. Skenario
 
 | Provider | Field Wajib | Catatan |
 |---|---|---|
-| `google` | `googleApiKey` | Model dicek via `googleModel || selectedModel` |
-| `anthropic` | `anthropicApiKey` | Model dicek via `anthropicModel || selectedModel` |
+| `google` | `googleApiKey` | Model dicek via `googleModel \|\| selectedModel` |
+| `anthropic` | `anthropicApiKey` | Model dicek via `anthropicModel \|\| selectedModel` |
 | `openrouter` | `openRouterKey` + model | Validasi juga config Supabase jika `imageInputMode === "supabase"` |
-| `ollama` | `ollamaModel || selectedModel` | Tidak butuh API key (lokal). Langsung return `{ valid: true }`. |
+| `ollama` | `ollamaModel \|\| selectedModel` | Tidak butuh API key (lokal). Langsung return `{ valid: true }`. |
 
 ### Kode Sumber
 
@@ -191,21 +191,22 @@ if (options?.isParallel) {
 
 ---
 
-## 6. Formula
+## 6. Formula Statistik
 
 ### A. Tokens Per Second (TPS)
 
-Kecepatan dihitung berdasarkan berapa banyak token yang dihasilkan dalam satu detik:
+Formula berbeda berdasarkan mode eksekusi:
 
-1. **Mode Serial (Kecepatan Model)**
-   Dihitung dengan menjumlahkan token dari semua halaman yang sukses, lalu dibagi dengan total durasi bersih (durasi total dikurangi waktu persiapan/upload).
-   > **Konsep**: `Total Token` ÷ `Total Waktu Generasi`
+**Mode Serial — Kecepatan Generasi Model:**
 
-2. **Mode Paralel (Throughput Sistem)**
-   Mengukur performa sistem secara keseluruhan. Dihitung dengan membagi total token dengan rentang real time (*wall-clock*) dari saat halaman pertama mulai hingga halaman terakhir selesai.
-   > **Konsep**: `Total Token` ÷ `Durasi Total Proses (Wall-clock)`
+$$TPS_{serial} = \frac{\sum completionTokens_{sukses}}{\sum (durationMs - uploadDurationMs)_{sukses} \div 1000}$$
 
-> Dalam mode paralel, penyebutnya adalah rentang wall-clock dari mulai halaman pertama hingga akhir halaman terakhir. Ini mengukur berapa banyak token yang dihasilkan sistem per detik secara real time.
+**Mode Paralel — Throughput Sistem:**
+
+$$TPS_{paralel} = \frac{\sum completionTokens_{sukses}}{(lastPageEndMs - firstPageStartMs) \div 1000}$$
+
+> [!IMPORTANT]
+> Dalam mode paralel, penyebutnya adalah rentang wall-clock dari mulai halaman pertama hingga akhir halaman terakhir. Ini mengukur berapa banyak token yang dihasilkan sistem per detik waktu nyata.
 
 ---
 
@@ -258,4 +259,4 @@ const estimatedCostUsd = costPages.length > 0
 
 ---
 
-*Catatan Audit: Spesifikasi ini mencerminkan kode versi v5. Semua metrik diturunkan dari `pageResults` setelah selesai untuk menjamin konsistensi.*
+*Catatan Audit: Spesifikasi ini mencerminkan kode versi 5. Semua metrik diturunkan dari `pageResults` setelah selesai untuk menjamin konsistensi.*
