@@ -1085,7 +1085,7 @@ section { margin: 64px 0; }
 </div>
 </div>
 <div class="impact-footer">
-<strong>Rata-rata peningkatan: +1.8 poin</strong> di semua 8 dimensi. Peningkatan terbesar terjadi di dimensi yang paling bisa dikontrol lewat instruksi: cara berpikir, struktur laporan, dan transparansi ketidakpastian. Namun ada <strong>ceiling yang tidak bisa ditembus prompt</strong>: tanpa akses ke dokumen PDF primer (annual report, teks PP), gap data terhadap ChatGPT tetap ada.
+<strong>Rata-rata peningkatan: +1.8 poin</strong> di semua 8 dimensi. Peningkatan terbesar terjadi di dimensi yang paling bisa dikontrol lewat instruksi: cara berpikir, struktur laporan, dan transparansi ketidakpastian. Namun ada <strong>batas yang tidak bisa ditembus oleh prompt</strong>: tanpa akses ke dokumen PDF primer (annual report, teks PP), gap data terhadap ChatGPT akan tetap ada.
 </div>
 </div>
 </section>
