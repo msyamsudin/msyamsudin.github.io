@@ -960,7 +960,7 @@ section { margin: 64px 0; }
 <section>
 <div class="section-eyebrow">02 · Scorecard</div>
 <h2 class="section-title">Penilaian 8 dimensi</h2>
-<p class="section-lead">Setiap dimensi dinilai 1–10. Bobot sama. Penghijau menandakan pemenang dimensi.</p>
+<p class="section-lead">Setiap dimensi dinilai 1–10. Bobot sama. Kotak hijau menandakan pemenang dimensi.</p>
 <div class="chart-legend" style="margin-bottom:16px">
 <div class="legend-item"><div class="legend-sq" style="background:var(--chatgpt)"></div>ChatGPT</div>
 <div class="legend-item"><div class="legend-sq" style="background:var(--odyssey)"></div>Odysseus Default</div>
