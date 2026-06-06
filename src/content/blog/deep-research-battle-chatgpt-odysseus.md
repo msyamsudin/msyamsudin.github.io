@@ -259,6 +259,8 @@ section { margin: 64px 0; }
   border-radius: 12px;
   overflow: hidden;
   background: var(--white);
+  display: flex;
+  flex-direction: column;
 }
 .cc-header {
   padding: 20px 20px 14px;
@@ -289,7 +291,27 @@ section { margin: 64px 0; }
   display: flex;
   flex-direction: column;
   gap: 8px;
+  flex-grow: 1;
 }
+.cc-link {
+  display: block;
+  text-align: center;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-top: 1px solid var(--border);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-decoration: none !important;
+  transition: all 0.2s ease;
+}
+.cc-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.cc-chatgpt .cc-link { color: var(--chatgpt) !important; }
+.cc-odyssey .cc-link { color: var(--odyssey) !important; }
+.cc-enhanced .cc-link { color: var(--enhanced) !important; }
 .cc-stat {
   display: flex;
   justify-content: space-between;
@@ -452,10 +474,31 @@ section { margin: 64px 0; }
 .dd-header {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 16px;
   padding: 20px 24px;
   border-bottom: 1px solid var(--border);
 }
+.dd-link {
+  margin-left: auto;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+  text-decoration: none !important;
+  transition: all 0.2s ease;
+}
+.dd-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+.ddc-chatgpt ~ .dd-link { color: var(--chatgpt) !important; border-color: rgba(106, 174, 255, 0.2); }
+.ddc-odyssey ~ .dd-link { color: var(--odyssey) !important; border-color: rgba(176, 159, 214, 0.2); }
+.ddc-enhanced ~ .dd-link { color: var(--enhanced) !important; border-color: rgba(93, 204, 160, 0.2); }
 .dd-score-circle {
   width: 56px;
   height: 56px;
@@ -851,6 +894,7 @@ section { margin: 64px 0; }
 <div class="cc-stat"><span class="cc-stat-label">Data primer</span><span class="cc-stat-val">Annual Report FY2025</span></div>
 <div class="cc-stat"><span class="cc-stat-label">Skenario</span><span class="cc-stat-val">Base / Down / Up + sensitivitas</span></div>
 </div>
+<a href="/samples/deep-research-battle-chatgpt-odysseus/chatgpt-DSI.md" target="_blank" class="cc-link">Lihat Sample Report</a>
 </div>
 <div class="contestant-card cc-odyssey">
 <div class="cc-header">
@@ -864,6 +908,7 @@ section { margin: 64px 0; }
 <div class="cc-stat"><span class="cc-stat-label">Sumber dikutip</span><span class="cc-stat-val">28</span></div>
 <div class="cc-stat"><span class="cc-stat-label">Skenario</span><span class="cc-stat-val">A (Pass-Through) / B (State Cut) / C (Hilirisasi)</span></div>
 </div>
+<a href="/samples/deep-research-battle-chatgpt-odysseus/Default-Gemma4-Research-Report.html" target="_blank" class="cc-link">Lihat Sample Report</a>
 </div>
 <div class="contestant-card cc-enhanced">
 <div class="cc-header">
@@ -877,6 +922,7 @@ section { margin: 64px 0; }
 <div class="cc-stat"><span class="cc-stat-label">Sumber dikutip</span><span class="cc-stat-val">35</span></div>
 <div class="cc-stat"><span class="cc-stat-label">Skenario</span><span class="cc-stat-val">3 kanal eksposur + tabel sensitivitas EBITDA</span></div>
 </div>
+<a href="/samples/deep-research-battle-chatgpt-odysseus/Enhance-Laporan-Analisis-Ekuitas.html" target="_blank" class="cc-link">Lihat Sample Report</a>
 </div>
 </div>
 </section>
@@ -1026,6 +1072,7 @@ section { margin: 64px 0; }
 <div class="dd-platform">OpenAI · ChatGPT</div>
 <div class="dd-name">Deep Research — Pemenang Keseluruhan</div>
 </div>
+<a href="/samples/deep-research-battle-chatgpt-odysseus/chatgpt-DSI.md" target="_blank" class="dd-link">Buka Sample Report</a>
 </div>
 <div class="dd-killer-fact kf-chatgpt">
 Satu-satunya sistem yang masuk ke Annual Report ADRO FY2025 dan mengekstrak angka yang diaudit: revenue US$1,873.5 juta, EBITDA US$799 juta, blok ekspor US$664.4 juta, saldo FVOCI US$497.5 juta. Model skenarionya dibangun dari data ini.
@@ -1060,6 +1107,7 @@ Satu-satunya sistem yang masuk ke Annual Report ADRO FY2025 dan mengekstrak angk
 <div class="dd-platform">Odysseus · Gemma 4 31B · Default Prompt</div>
 <div class="dd-name">Kerangka Bagus, Fondasi Data Rapuh</div>
 </div>
+<a href="/samples/deep-research-battle-chatgpt-odysseus/Default-Gemma4-Research-Report.html" target="_blank" class="dd-link">Buka Sample Report</a>
 </div>
 <div class="dd-killer-fact kf-odyssey">
 Laporan menyebut ADRO sebagai "one of the nation's largest coal producers" — mengabaikan fakta material bahwa bisnis batu bara termal sudah di-spin-off ke AADI pada Desember 2024. Ini kesalahan yang tidak bisa dimaafkan dalam analisis ekuitas.
@@ -1094,6 +1142,7 @@ Laporan menyebut ADRO sebagai "one of the nation's largest coal producers" — m
 <div class="dd-platform">Odysseus · Gemma 4 31B · Enhanced Prompt</div>
 <div class="dd-name">Bukti Prompt Engineering Bekerja</div>
 </div>
+<a href="/samples/deep-research-battle-chatgpt-odysseus/Enhance-Laporan-Analisis-Ekuitas.html" target="_blank" class="dd-link">Buka Sample Report</a>
 </div>
 <div class="dd-killer-fact kf-enhanced">
 Menyebut implementasi penuh DSI pada "1 September 2026" — berbeda dari sumber Reuters dan ChatGPT yang menyebut "1 Januari 2027". Inkonsistensi tanggal ini kecil tapi penting bagi investor yang memodelkan timeline risiko.
