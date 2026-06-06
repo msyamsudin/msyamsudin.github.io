@@ -134,19 +134,45 @@ hr {
 
 
 /* Tables */
+.table-wrapper {
+	overflow-x: auto;
+	width: 100%;
+	border: 1px solid var(--glass-border);
+	border-radius: 12px;
+	background: var(--glass-bg);
+	margin: 2rem 0;
+	box-shadow: var(--box-shadow);
+}
+
+.table-wrapper.compact {
+	max-width: 650px;
+	margin: 2rem auto;
+}
+
 table {
 	width: 100%;
 	border-collapse: collapse;
-	margin: 2rem 0;
 	font-size: 0.95rem;
-	border: 1px solid var(--glass-border);
-	border-radius: 12px;
-	overflow: hidden;
-	background: var(--glass-bg);
-	display: block;
-	overflow-x: auto;
+	background: transparent;
 }
 
+table.benchmark-table {
+	display: table;
+	width: 100%;
+	border-collapse: collapse;
+	border: none;
+	background: transparent;
+	margin: 0;
+	font-size: 0.9rem;
+}
+
+table.benchmark-table th, 
+table.benchmark-table td {
+	padding: 0.75rem 1rem;
+	border-bottom: 1px solid var(--glass-border);
+}
+
+/* Base styles for standard and benchmark cells */
 th, td {
 	padding: 1rem;
 	text-align: left;
@@ -154,12 +180,17 @@ th, td {
 	min-width: 120px;
 }
 
+table.benchmark-table th:first-child,
+table.benchmark-table td:first-child {
+	min-width: 180px;
+}
+
 th {
-	background: rgba(255, 255, 255, 0.03);
+	background: rgba(255, 255, 255, 0.02);
 	color: var(--accent);
 	font-weight: 600;
 	text-transform: uppercase;
-	font-size: 0.8rem;
+	font-size: 0.75rem;
 	letter-spacing: 0.05em;
 }
 
@@ -172,7 +203,24 @@ tbody tr:nth-child(even) {
 }
 
 tbody tr:hover {
-	background: rgba(255, 255, 255, 0.04);
+	background: rgba(255, 255, 255, 0.03);
+}
+
+/* Numeric Columns */
+table.benchmark-table th.num,
+table.benchmark-table td.num {
+	text-align: right !important;
+	font-variant-numeric: tabular-nums;
+}
+
+/* Winner Highlights */
+table.benchmark-table tr.winner {
+	background-color: rgba(16, 185, 129, 0.12) !important;
+}
+
+table.benchmark-table tr.winner td:first-child {
+	border-left: 4px solid var(--accent-emerald);
+	padding-left: calc(1rem - 4px);
 }
 
 @media (max-width: 720px) {
