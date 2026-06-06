@@ -1,6 +1,6 @@
 ---
-title: 'Battle of Deep Research: ChatGPT vs Odysseus — ADRO & DSI'
-description: 'ChatGPT vs Odysseus (Gemma 4) vs Odysseus + Enhanced Prompt'
+title: 'Battle of Deep Research: ChatGPT vs Odysseus'
+description: 'ChatGPT vs Odysseus (Gemma 4) vs Odysseus (Gemma 4) + Enhanced Prompt'
 pubDate: 'Jun 06 2026'
 heroImage: '../../assets/blog-placeholder-5.jpg'
 ---
@@ -1279,7 +1279,7 @@ Menyebut implementasi penuh DSI pada "1 September 2026" — berbeda dari sumber 
 </div>
 <!-- FOOTER -->
 <footer class="article-footer">
-Deep Research Battle · ADRO vs DSI · Analisis oleh Claude Sonnet 4.6 Max · 6 Juni 2026 · Untuk tujuan edukasi dan perbandingan metodologi, bukan rekomendasi investasi.
+Analisis oleh Claude Sonnet 4.6 Max · Untuk tujuan edukasi dan perbandingan metodologi, bukan rekomendasi investasi.
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
