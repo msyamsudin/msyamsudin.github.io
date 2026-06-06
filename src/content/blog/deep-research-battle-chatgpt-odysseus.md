@@ -1351,9 +1351,6 @@ Menyebut implementasi penuh DSI pada "1 September 2026" — berbeda dari sumber 
 <span class="cpill cpill-warn">Default: Butuh enhanced prompt minimal</span>
 </div>
 </div>
-<div class="callout callout-info" style="margin-top:24px">
-<strong>Untuk ADRO spesifik:</strong> Ketiga laporan sepakat pada pandangan <em>netral-cautious</em> untuk horizon pendek. Risiko utama bukan keruntuhan laba mendadak, tapi kenaikan discount rate akibat opacity regulasi pada pricing, counterparty structure, dan cash conversion. Trigger terpenting yang perlu dipantau: publikasi formula harga teknis DSI per komoditas dari Kementerian Perdagangan.
-</div>
 </section>
 </div>
 <!-- FOOTER -->
