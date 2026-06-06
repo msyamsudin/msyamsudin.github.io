@@ -326,7 +326,8 @@ section { margin: 64px 0; }
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: 16px;
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .sm-header {
   display: grid;
@@ -609,7 +610,8 @@ section { margin: 64px 0; }
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: 16px;
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .sens-table {
   width: 100%;
@@ -816,7 +818,35 @@ section { margin: 64px 0; }
   .masthead-inner, .article-body, .verdict-inner { padding-left: 20px; padding-right: 20px; }
   .contestant-grid, .impact-deltas, .dd-body, .findings-grid, .two-col { grid-template-columns: 1fr; }
   .verdict-inner { grid-template-columns: 1fr; }
-  .sm-header, .sm-row { grid-template-columns: 1fr 90px 90px 90px; }
+  
+  /* Make score matrix grid horizontal scrolling on mobile */
+  .sm-header, .sm-row { 
+    grid-template-columns: minmax(200px, 1fr) 90px 90px 90px; 
+    width: 100%;
+    min-width: 470px;
+  }
+  
+  /* Make sensitivity table scrollable with minimum width */
+  .sens-table {
+    min-width: 580px;
+  }
+  
+  /* Clean up stacked grid dividers */
+  .dd-col + .dd-col {
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+  .verdict-cell + .verdict-cell::before {
+    content: none;
+  }
+  .verdict-cell + .verdict-cell {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  /* Optimize paddings for smaller screens */
+  .conclusion-box, .impact-box {
+    padding: 32px 20px;
+  }
 }
 
 
