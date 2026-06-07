@@ -872,7 +872,6 @@ section { margin: 64px 0; }
 <div class="masthead-bg"></div>
 <div class="masthead-grid"></div>
 <div class="masthead-inner">
-<div class="category-tag">Analisis · Deep Research · Ekuitas Indonesia</div>
 <h1>Battle of<br><em>Deep Research</em></h1>
 <p class="masthead-sub">ChatGPT vs Odysseus (Gemma 4) vs Odysseus + Enhanced Prompt</p>
 <div class="masthead-meta">
@@ -969,9 +968,9 @@ section { margin: 64px 0; }
 <div class="score-matrix">
 <div class="sm-header">
 <div class="sm-h-cell">Dimensi Penilaian</div>
-<div class="sm-h-cell">ChatGPT</div>
-<div class="sm-h-cell">Default</div>
-<div class="sm-h-cell">Enhanced</div>
+<div class="sm-h-cell">GPT</div>
+<div class="sm-h-cell">Def.</div>
+<div class="sm-h-cell">Enhc.</div>
 </div>
 <!-- Row 1 -->
 <div class="sm-row">
