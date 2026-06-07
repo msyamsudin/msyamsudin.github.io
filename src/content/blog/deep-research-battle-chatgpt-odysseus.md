@@ -1,7 +1,7 @@
 ---
 title: 'Battle of Deep Research: ChatGPT vs Odysseus'
 description: 'ChatGPT vs Odysseus (Gemma 4) vs Odysseus (Gemma 4) + Enhanced Prompt'
-pubDate: 'Jun 06 2026'
+pubDate: 'Jun 07 2026'
 heroImage: '../../assets/blog-placeholder-5.jpg'
 ---
 
